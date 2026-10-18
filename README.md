@@ -114,7 +114,9 @@ flowchart TD
 | 5 | **False skill matches from everyday words:** "go further", "you excel at", "swiftly". | Ambiguous skill names (Go, Excel, Swift, Rust, Spring, …) only match when capitalized, and boundary lookarounds handle `C++`, `C#`, `.NET`, and `CI/CD`. | Tested: a sales posting full of those words matches zero skills. |
 | 6 | **Keeping data fresh without duplicates or losing your progress.** | Deterministic IDs (`source:company:postingId`) with upsert-on-conflict that refreshes posting fields but never overwrites your status. Postings missing from a board's latest response are marked inactive. | Re-running ingestion adds 0 duplicates, and your applied/saved statuses survive every refresh. |
 | 7 | **AI-suggested companies may not exist on these boards,** or the guessed slug is wrong. | Every suggestion is probed against all three boards' lightweight endpoints. Only boards with live postings are added. | No dead companies in your list. |
-| 8 | **Keeping it free to run at scale.** | Scoring runs locally. Claude is called only on explicit actions (upload, discover, tailor) using Claude Haiku 5.5. Fetching runs on GitHub Actions, the database on Turso's free tier, hosting on Vercel. | About $0 per month for infrastructure, and a fraction of a cent per tailored resume. |
+| 8 | **Hourly refreshes rewrote every row,** about 6M database writes a month, enough to exhaust a free tier. | Each posting stores a content hash. Ingestion writes only new, edited, or removed postings, and purges postings gone for 30+ days that you never acted on. | **Steady-state writes dropped from 8,356 rows per run to 0** (runs went from 10 s to 4 s). |
+| 9 | **A personal app on the public internet** exposes your resume and your API credit. | A password gate (`APP_PASSWORD`) enforced in the Next.js proxy for every page, re-checked inside every Server Action, with a hashed httpOnly session cookie and constant-time comparison. | Only you can view data or trigger paid AI calls. |
+| 10 | **Keeping it free to run at scale.** | Scoring runs locally. Claude is called only on explicit actions (upload, discover, tailor) using Claude Haiku 5.5. Fetching runs on GitHub Actions, the database on Turso's free tier, hosting on Vercel. | About $0 per month for infrastructure, and a fraction of a cent per tailored resume. |
 
 ---
 
@@ -201,8 +203,23 @@ Uploading, company discovery, and tailoring use Claude. Browsing, scoring, filte
 ## Deploying for free
 
 1. **Database:** create a free [Turso](https://turso.tech) database, set `DATABASE_URL` and `DATABASE_AUTH_TOKEN`, then run `npm run db:push`.
-2. **App:** import the repo into [Vercel](https://vercel.com) and add `DATABASE_URL`, `DATABASE_AUTH_TOKEN`, and `ANTHROPIC_API_KEY` as environment variables.
+2. **App:** import the repo into [Vercel](https://vercel.com) and add `DATABASE_URL`, `DATABASE_AUTH_TOKEN`, `ANTHROPIC_API_KEY`, and **`APP_PASSWORD`** (a long, unique password; this locks the site so only you can use it) as environment variables.
 3. **Hourly refresh:** add `DATABASE_URL` and `DATABASE_AUTH_TOKEN` as GitHub Actions secrets. The workflow in `.github/workflows/ingest.yml` runs every hour.
+
+### Cost
+
+| Service | Role | Cost |
+|---|---|---|
+| Vercel (Hobby) | Hosting | $0 |
+| Turso (free tier) | Database | $0 (only changed rows are written) |
+| GitHub Actions | Hourly fetch and CI | $0 for public repos |
+| Claude Haiku 5.5 | Upload, discovery, tailoring | About $0.003 per tailored resume |
+
+### Good to know
+
+- Resume uploads are capped at 4 MB (Vercel limits request bodies to 4.5 MB).
+- GitHub pauses scheduled workflows on repos with no commits for 60 days. Re-enable it from the Actions tab.
+- Set a monthly spend limit in the Anthropic Console as a safety net.
 
 ## Scripts
 

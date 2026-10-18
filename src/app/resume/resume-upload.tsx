@@ -10,7 +10,7 @@ export function ResumeUpload() {
     <form action={formAction} className="space-y-3 rounded-lg border border-dashed border-accent/50 bg-surface p-5">
       <div>
         <h2 className="font-semibold">Upload resume</h2>
-        <p className="text-sm text-muted">PDF, Word (.docx), or text. Max 5 MB. Uploading replaces your current resume.</p>
+        <p className="text-sm text-muted">PDF, Word (.docx), or text. Max 4 MB. Uploading replaces your current resume.</p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <input

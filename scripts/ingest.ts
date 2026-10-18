@@ -7,7 +7,7 @@ async function main() {
   const { ingestAll } = await import("../src/lib/ingest");
   const summary = await ingestAll();
   console.log(
-    `\nDone in ${(summary.durationMs / 1000).toFixed(1)}s — ${summary.jobsSeen} jobs from ${summary.companies} companies, ${summary.jobsNew} new, ${summary.errors.length} errors.`,
+    `\nDone in ${(summary.durationMs / 1000).toFixed(1)}s — ${summary.jobsSeen} jobs from ${summary.companies} companies, ${summary.jobsNew} new, ${summary.rowsWritten} rows written, ${summary.purged} purged, ${summary.errors.length} errors.`,
   );
   // Fail the CI run only if every board failed; a single company changing ATS shouldn't.
   if (summary.errors.length === summary.companies) process.exit(1);

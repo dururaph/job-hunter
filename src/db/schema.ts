@@ -20,6 +20,8 @@ export const jobs = sqliteTable(
     description: text("description").notNull().default(""),
     salary: text("salary"),
     postedAt: integer("posted_at", { mode: "timestamp_ms" }),
+    /** Hash of the posting's content; ingestion skips the write when it hasn't changed. */
+    contentHash: text("content_hash"),
     firstSeenAt: integer("first_seen_at", { mode: "timestamp_ms" }).notNull(),
     lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }).notNull(),
     active: integer("active", { mode: "boolean" }).notNull().default(true),

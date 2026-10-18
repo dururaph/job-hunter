@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   experimental: {
-    // Resume uploads (up to 5 MB) go through a Server Action.
-    serverActions: { bodySizeLimit: "6mb" },
+    // Resume uploads (up to 4 MB) go through a Server Action; Vercel caps request bodies at 4.5 MB.
+    serverActions: { bodySizeLimit: "4.4mb" },
   },
   turbopack: {
     rules: {

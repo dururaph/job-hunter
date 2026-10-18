@@ -2,8 +2,10 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { db, JOB_STATUSES, type JobStatus, jobs, tailoredResumes } from "@/db";
+import { isValidSession, SESSION_COOKIE } from "@/lib/auth";
 import { describeError } from "@/lib/claude";
 import { addCompanies, findBoard, getCompanies, removeCompany } from "@/lib/companies";
 import { discoverCompanies } from "@/lib/discover";
@@ -13,13 +15,20 @@ import { getResume, saveResume } from "@/lib/profile";
 import type { Source } from "@/lib/sources/types";
 import { tailorResume } from "@/lib/tailor";
 
+// The proxy already gates pages; this also protects actions called directly.
+async function requireAuth() {
+  if (!(await isValidSession((await cookies()).get(SESSION_COOKIE)?.value))) throw new Error("Not signed in.");
+}
+
 export async function setJobStatus(jobId: string, status: JobStatus) {
+  await requireAuth();
   if (!JOB_STATUSES.includes(status)) throw new Error(`Unknown status ${status}`);
   await db.update(jobs).set({ status }).where(eq(jobs.id, jobId));
   revalidatePath("/", "layout");
 }
 
 export async function refreshJobs() {
+  await requireAuth();
   const summary = await ingestAll(undefined, () => {});
   revalidatePath("/", "layout");
   return { jobsSeen: summary.jobsSeen, jobsNew: summary.jobsNew, errors: summary.errors };
@@ -28,6 +37,7 @@ export async function refreshJobs() {
 export type TailorState = { error?: string; tailoredId?: number };
 
 export async function tailorJob(jobId: string): Promise<TailorState> {
+  await requireAuth();
   const job = await db.query.jobs.findFirst({ where: eq(jobs.id, jobId) });
   if (!job) return { error: "Job not found." };
   try {
@@ -50,6 +60,7 @@ const zodMessage = (err: z.ZodError) =>
   err.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("\n");
 
 export async function saveResumeAction(_prev: SaveResumeState, formData: FormData): Promise<SaveResumeState> {
+  await requireAuth();
   let parsed: unknown;
   try {
     parsed = JSON.parse(String(formData.get("resume") ?? ""));
@@ -69,6 +80,7 @@ export async function saveResumeAction(_prev: SaveResumeState, formData: FormDat
 export type UploadResumeState = { ok?: boolean; error?: string };
 
 export async function uploadResumeAction(_prev: UploadResumeState, formData: FormData): Promise<UploadResumeState> {
+  await requireAuth();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { error: "Choose a resume file first." };
   try {
@@ -89,6 +101,7 @@ export type DiscoverState = {
 };
 
 export async function discoverCompaniesAction(): Promise<DiscoverState> {
+  await requireAuth();
   try {
     const { added, notFound } = await discoverCompanies(await getResume());
     // Pull the new companies' jobs right away so they show up in the feed.
@@ -104,6 +117,7 @@ export async function discoverCompaniesAction(): Promise<DiscoverState> {
 export type AddCompanyState = { error?: string; message?: string };
 
 export async function addCompanyAction(_prev: AddCompanyState, formData: FormData): Promise<AddCompanyState> {
+  await requireAuth();
   const input = String(formData.get("company") ?? "").trim();
   if (!input) return { error: "Enter a company name or careers-page URL." };
   // Accept a careers URL (boards.greenhouse.io/x, jobs.lever.co/x, jobs.ashbyhq.com/x) or a plain name.
@@ -126,6 +140,7 @@ export async function addCompanyAction(_prev: AddCompanyState, formData: FormDat
 }
 
 export async function removeCompanyAction(source: Source, slug: string) {
+  await requireAuth();
   await removeCompany(source, slug);
   revalidatePath("/", "layout");
 }

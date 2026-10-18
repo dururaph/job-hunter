@@ -5,7 +5,7 @@ import { z } from "zod";
 import { assertCompleted, claude, MODEL } from "./claude";
 import { type Resume, ResumeSchema } from "./resume";
 
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 // Every field is required here (empty string / empty array when absent) so the model
 // always returns the full shape; blanks are cleaned up before validation.
@@ -59,7 +59,7 @@ function kindOf(file: File): FileKind | null {
 export async function parseResumeFile(file: File): Promise<Resume> {
   const kind = kindOf(file);
   if (!kind) throw new Error("Upload a PDF, Word (.docx), or text file.");
-  if (file.size > MAX_UPLOAD_BYTES) throw new Error("That file is over 5 MB.");
+  if (file.size > MAX_UPLOAD_BYTES) throw new Error("That file is over 4 MB. Try exporting a smaller PDF (most resumes are under 1 MB).");
   const bytes = Buffer.from(await file.arrayBuffer());
 
   let content: Anthropic.Beta.BetaContentBlockParam[];
