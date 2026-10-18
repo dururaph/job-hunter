@@ -1,0 +1,42 @@
+{
+  "name": "Your Name",
+  "email": "you@example.com",
+  "phone": "(555) 555-5555",
+  "location": "City, State",
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/yourname" },
+    { "label": "LinkedIn", "url": "https://linkedin.com/in/yourname" }
+  ],
+  "summary": "Software engineer who builds full-stack web applications and data pipelines.",
+  "targetRoles": ["Software Engineer", "Backend Engineer", "Full Stack Engineer"],
+  "skills": ["TypeScript", "JavaScript", "Python", "React", "Next.js", "Node.js", "PostgreSQL", "SQL", "Docker", "AWS", "Git", "REST"],
+  "experience": [
+    {
+      "company": "Example Corp",
+      "title": "Software Engineering Intern",
+      "location": "Remote",
+      "start": "May 2025",
+      "end": "Aug 2025",
+      "bullets": [
+        "Built an internal dashboard in React and TypeScript used by 40 support agents to triage tickets",
+        "Wrote a Node.js service that synced customer data from Postgres to the CRM, replacing a manual weekly export",
+        "Added integration tests that caught 12 regressions before release"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Job Hunter",
+      "link": "https://github.com/yourname/job-hunter",
+      "tech": ["Next.js", "TypeScript", "SQLite", "Claude API"],
+      "bullets": [
+        "Aggregates live postings from Greenhouse, Lever, and Ashby APIs across 40 companies on a scheduled pipeline",
+        "Tailors resumes to job descriptions with an LLM, with validation that prevents fabricated experience"
+      ]
+    }
+  ],
+  "education": [
+    { "school": "Your University", "degree": "B.S. Computer Science", "end": "May 2026" }
+  ],
+  "certifications": []
+}
